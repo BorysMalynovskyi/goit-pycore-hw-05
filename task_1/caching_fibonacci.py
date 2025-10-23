@@ -1,12 +1,17 @@
-"""Fibonacci closure with caching and a simple console interface."""
+"""Fibonacci closure with caching.
 
-from typing import Callable, Dict
+This module provides the :func:`caching_fibonacci` factory that produces
+recursive Fibonacci functions capable of caching previously computed
+values. The closure keeps the cache alive between calls to the returned
+function.
+"""
 
+from typing import Callable
 
 def caching_fibonacci() -> Callable[[int], int]:
     """Return a Fibonacci function that caches computed values."""
 
-    cache: Dict[int, int] = {0: 0, 1: 1}
+    cache: dict[int, int] = {0: 0, 1: 1}
 
     def fibonacci(n: int) -> int:
         """Compute the *n*-th Fibonacci number with caching."""
@@ -22,37 +27,27 @@ def caching_fibonacci() -> Callable[[int], int]:
     return fibonacci
 
 
-def interactive_fibonacci_loop() -> None:
-    """Interactively prompt the user for Fibonacci numbers to calculate."""
-
-    fib = caching_fibonacci()
+def caching_fibonacci_console() -> None:
+    fibonacci = caching_fibonacci()
 
     while True:
-        user_input = input(
-            "Enter a non-negative integer for Fibonacci (or 'exit' to quit): "
-        ).strip()
+        user_input = input("Enter a non-negative integer (blank to exit): ").strip()
 
-        if user_input.lower() in {"exit", "quit"}:
-            print("Goodbye!")
+        if user_input == "":
             break
 
-        if not user_input:
-            print("Please enter a value or type 'exit' to quit.")
-            continue
-
         try:
-            number = int(user_input)
+            position = int(user_input)
         except ValueError:
-            print("Input must be an integer. Try again.")
+            print("Please enter a valid integer.")
             continue
 
-        if number < 0:
+        if position < 0:
             print("Please enter a non-negative integer.")
             continue
 
-        result = fib(number)
-        print(f"Fibonacci({number}) = {result}")
+        print(f"Fibonacci({position}) = {fibonacci(position)}")
 
 
 if __name__ == "__main__":
-    interactive_fibonacci_loop()
+    caching_fibonacci_console()

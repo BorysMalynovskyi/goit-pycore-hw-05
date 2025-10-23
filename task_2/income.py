@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import re
 from collections.abc import Callable, Iterable, Iterator
+from math import isclose
 
 NumberGenerator = Iterator[float]
 
@@ -34,5 +35,12 @@ def sum_profit(text: str, func: Callable[[str], Iterable[float]]) -> float:
     """
     return sum(func(text))
 
-
-assets = [generator_numbers, sum_profit]
+if __debug__:
+    _sample_text = (
+        "Загальний дохід працівника складається з декількох частин: 1000.01 "
+        "як основний дохід, доповнений додатковими надходженнями 27.45 і 324.00 "
+        "доларів."
+    )
+    _expected_numbers = [1000.01, 27.45, 324.0]
+    assert list(generator_numbers(_sample_text)) == _expected_numbers
+    assert isclose(sum_profit(_sample_text, generator_numbers), 1351.46)

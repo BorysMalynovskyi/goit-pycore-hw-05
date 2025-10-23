@@ -56,3 +56,6 @@ def interactive_fibonacci_loop() -> None:
 
 if __name__ == "__main__":
     interactive_fibonacci_loop()
+
+
+assets = [caching_fibonacci, interactive_fibonacci_loop]

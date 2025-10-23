@@ -33,3 +33,6 @@ def sum_profit(text: str, func: Callable[[str], Iterable[float]]) -> float:
         iterable of numeric values extracted from ``text``.
     """
     return sum(func(text))
+
+
+assets = [generator_numbers, sum_profit]

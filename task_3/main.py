@@ -1,7 +1,5 @@
-"""Command line tool for analysing log files by severity level."""
-from __future__ import annotations
-
 import argparse
+import sys
 from collections import Counter
 from pathlib import Path
 from typing import List, Sequence
@@ -16,7 +14,7 @@ def parse_log_line(line: str) -> LogEntry:
     If the line does not match this layout a :class:`ValueError` is raised.
     """
 
-    parts = line.strip().split(maxsplit=3)
+    parts = line.strip().split(" ", maxsplit=3)
 
     if len(parts) < 4:
         raise ValueError("Log line has an unexpected format")
@@ -30,7 +28,6 @@ def parse_log_line(line: str) -> LogEntry:
         "message": message.strip(),
     }
 
-
 def load_logs(file_path: str | Path) -> List[LogEntry]:
     """Load and parse all log entries from *file_path*.
 
@@ -38,12 +35,10 @@ def load_logs(file_path: str | Path) -> List[LogEntry]:
     """
 
     path = Path(file_path)
-
     logs: List[LogEntry] = []
 
-    with path.open(encoding="utf-8") as handle:
-        for line_number, raw_line in enumerate(handle, start=1):
-
+    with path.open(encoding="utf-8") as rows:
+        for line_number, raw_line in enumerate(rows, start=1):
             stripped = raw_line.strip()
 
             if not stripped:
@@ -51,11 +46,10 @@ def load_logs(file_path: str | Path) -> List[LogEntry]:
 
             try:
                 logs.append(parse_log_line(stripped))
-            except ValueError as ex:
-                print(f"Skipping malformed line {line_number}: {ex}")
+            except ValueError as value_error:
+                print(f"Skipping malformed line {line_number}: {value_error}", file=sys.stderr)
 
     return logs
-
 
 def filter_logs_by_level(logs: Sequence[LogEntry], level: str) -> List[LogEntry]:
     """Return all log entries that match *level* (case-insensitive)."""
@@ -82,7 +76,9 @@ def display_log_counts(counts: dict[str, int]) -> None:
     count_width = max(len(header_count), max(len(str(value)) for value in counts.values()))
 
     print(f"{header_level.ljust(level_width)} | {header_count}")
+
     print(f"{'-' * level_width}-|{'-' * count_width}")
+
     for level in LEVEL_ORDER:
         print(f"{level.ljust(level_width)} | {str(counts.get(level, 0)).ljust(count_width)}")
 
@@ -93,11 +89,13 @@ def main(argv: Sequence[str] | None = None) -> int:
     argumentParser = argparse.ArgumentParser(
         description="Summarise log levels and optionally display detailed entries.",
     )
+
     argumentParser.add_argument(
         "logfile",
         type=Path,
         help="Path to the log file that should be analysed.",
     )
+
     argumentParser.add_argument(
         "level",
         nargs="?",
@@ -108,8 +106,8 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     try:
         logs = load_logs(args.logfile)
-    except FileNotFoundError:
-        print(f"Log file '{args.logfile}' does not exist.")
+    except OSError as os_error:
+        print(f"Unable to read log file '{args.logfile}': {os_error}", file=sys.stderr)
         return 1
 
     counts = count_logs_by_level(logs)

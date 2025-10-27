@@ -9,22 +9,24 @@ def caching_fibonacci() -> Callable[[int], int]:
 
     cache: Dict[int, int] = {0: 0, 1: 1}
 
-    def fibonacci(n: int) -> int:
+    def fibonacci(current_number: int) -> int:
         """Compute the *n*-th Fibonacci number with caching."""
 
-        if n in cache:
-            return cache[n]
-        if n <= 0:
+        if current_number in cache:
+            return cache[current_number]
+        
+        if current_number <= 0:
             return 0
 
-        cache[n] = fibonacci(n - 1) + fibonacci(n - 2)
-        return cache[n]
+        cache[current_number] = fibonacci(current_number - 1) + fibonacci(current_number - 2)
+        
+        return cache[current_number]
 
     return fibonacci
 
-if __debug__:
-    _fib = caching_fibonacci()
-    assert _fib(0) == 0
-    assert _fib(1) == 1
-    assert _fib(5) == 5
-    assert _fib(10) == 55
+if __name__ == "__main__":
+    _fibonacci = caching_fibonacci()
+    print(_fibonacci(0))
+    print(_fibonacci(1))
+    print(_fibonacci(5))
+    print(_fibonacci(10))

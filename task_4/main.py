@@ -1,4 +1,14 @@
-def parse_input(user_input):
+def input_error(func):
+    def inner(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except ValueError:
+            return "Give me name and phone please."
+
+    return inner
+
+@input_error
+def parse_input(user_input) -> tuple:
     """
     Parses the input string into a command and arguments.
     """
@@ -6,7 +16,8 @@ def parse_input(user_input):
     cmd = cmd.strip().lower()
     return cmd, *args
 
-def add_contact(name, phone, contacts):
+@input_error
+def add_contact(name, phone, contacts) -> str:
     """
     Adds a new contact to the dictionary.
     Checks if the contact already exists before adding.
@@ -17,7 +28,8 @@ def add_contact(name, phone, contacts):
         contacts[name] = phone
         return "Contact added."
 
-def change_contact(name, phone, contacts):
+@input_error
+def change_contact(name, phone, contacts) -> str:
     """
     Changes the phone number for an existing contact.
     """
@@ -27,7 +39,8 @@ def change_contact(name, phone, contacts):
     else:
         return "Contact not found."
 
-def show_phone(name, contacts):
+@input_error
+def show_phone(name, contacts) -> str:
     """
     Shows the phone number for a specified contact.
     """
@@ -36,7 +49,8 @@ def show_phone(name, contacts):
     else:
         return "Contact not found."
 
-def show_all(contacts):
+@input_error
+def show_all(contacts) -> str:
     """
     Shows all saved contacts.
     """

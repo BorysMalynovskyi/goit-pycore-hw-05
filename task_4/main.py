@@ -2,6 +2,10 @@ def input_error(func):
     def inner(*args, **kwargs):
         try:
             return func(*args, **kwargs)
+        except KeyError:
+            return "Contact not found."
+        except IndexError:
+            return "Enter the argument for the command."
         except ValueError:
             return "Give me name and phone please."
 

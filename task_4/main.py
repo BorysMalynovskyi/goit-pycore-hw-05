@@ -1,3 +1,8 @@
+from typing import Dict, List, Tuple
+
+ContactsBook = Dict[str, str]
+ParsedCommand = Tuple[str, List[str]]
+
 def input_error(func):
     def inner(*args, **kwargs):
         try:
@@ -7,101 +12,132 @@ def input_error(func):
         except IndexError:
             return "Enter the argument for the command."
         except ValueError:
-            return "Give me name and phone please."
+            return "Invalid format. Use: [command] [name] [phone]."
 
     return inner
 
 @input_error
-def parse_input(user_input) -> tuple:
+def parse_input(user_input: str) -> ParsedCommand:
     """
-    Parses the input string into a command and arguments.
+    Parse raw user input into a command and argument list.
     """
+    if not user_input.strip():
+        raise IndexError
+
     cmd, *args = user_input.split()
     cmd = cmd.strip().lower()
-    return cmd, *args
+
+    return cmd, args
 
 @input_error
-def add_contact(name, phone, contacts) -> str:
+def add_contact(args: List[str], contacts: ContactsBook) -> str:
     """
-    Adds a new contact to the dictionary.
-    Checks if the contact already exists before adding.
+    Add a new contact to the dictionary.
     """
+    if len(args) < 2:
+        raise ValueError
+
+    name, phone = args[0], args[1]
+
     if name in contacts:
         return f"Contact '{name}' already exists."
-    else:
-        contacts[name] = phone
-        return "Contact added."
+
+    contacts[name] = phone
+    
+    return "Contact added."
 
 @input_error
-def change_contact(name, phone, contacts) -> str:
+def change_contact(args: List[str], contacts: ContactsBook) -> str:
     """
-    Changes the phone number for an existing contact.
+    Change the phone number for an existing contact.
     """
-    if name in contacts:
-        contacts[name] = phone
-        return "Contact updated."
-    else:
-        return "Contact not found."
+    if len(args) < 2:
+        raise ValueError
+
+    name, phone = args[0], args[1]
+
+    if name not in contacts:
+        raise KeyError
+
+    contacts[name] = phone
+    return "Contact updated."
 
 @input_error
-def show_phone(name, contacts) -> str:
+def show_phone(args: List[str], contacts: ContactsBook) -> str:
     """
-    Shows the phone number for a specified contact.
+    Show the phone number for a specified contact.
     """
-    if name in contacts:
-        return f"{contacts[name]}"
-    else:
-        return "Contact not found."
+    if not args:
+        raise IndexError
+
+    name = args[0]
+
+    if name not in contacts:
+        raise KeyError
+
+    return f"{contacts[name]}"
 
 @input_error
-def show_all(contacts) -> str:
+def show_all(args: List[str], contacts: ContactsBook) -> str:
     """
-    Shows all saved contacts.
+    Show all saved contacts.
     """
+    if args:
+        raise IndexError
+
     if not contacts:
         return "No contacts saved."
 
-    return "\n".join([f"{name}: {phone}" for name, phone in contacts.items()])
+    return "\n".join(f"{name}: {phone}" for name, phone in contacts.items())
+
+@input_error
+def greet(args: List[str], _: ContactsBook) -> str:
+    """
+    Respond to the hello command.
+    """
+    if args:
+        raise IndexError
+
+    return "How can I help you?"
+
+COMMANDS = {
+    "add": add_contact,
+    "change": change_contact,
+    "phone": show_phone,
+    "all": show_all,
+    "hello": greet,
+}
 
 def main():
     """
     The main function that controls the bot's operation.
     """
-    contacts = {}
+    contacts: ContactsBook = {}
+
     print("Welcome to the assistant bot!")
 
-    command_map = {
-        "add": (add_contact, 2, "Invalid format. Use: add [name] [phone]"),
-        "change": (change_contact, 2, "Invalid format. Use: change [name] [phone]"),
-        "phone": (show_phone, 1, "Invalid format. Use: phone [name]"),
-        "all": (show_all, 0, "Invalid format. 'all' takes no arguments."),
-    }
-
     while True:
-        user_input = input(f"Enter a command: ")
-        
+        user_input = input("Enter a command: ")
+
         if not user_input:
             continue
-            
-        command, *args = parse_input(user_input)
+
+        command, args = parse_input(user_input)
 
         if command in ["close", "exit"]:
             print("Good bye!")
             break
-            
-        elif command == "hello":
-            print("How can I help you?")
 
-        elif command in command_map:
-            handler, expected_args, error_message = command_map[command]
-            
-            if len(args) != expected_args:
-                print(error_message)
-            else:
-                print(handler(*args, contacts))
-                
-        else:
+        handler = COMMANDS.get(command)
+
+        if handler is None:
             print("Invalid command.")
+            continue
+
+        result = handler(args, contacts)
+
+        if result:
+            print(result)
 
 if __name__ == "__main__":
     main()

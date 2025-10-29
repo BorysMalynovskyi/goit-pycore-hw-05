@@ -23,9 +23,6 @@ def parse_input(user_input: str) -> ParsedCommand:
     """
     Parse raw user input into a command and argument list.
     """
-    if not user_input.strip():
-        raise IndexError
-
     cmd, *args = user_input.split()
     cmd = cmd.strip().lower()
 
@@ -37,10 +34,8 @@ def add_contact(args: List[str], contacts: ContactsBook) -> str:
     """
     Add a new contact to the dictionary.
     """
-    if len(args) < 2:
-        raise ValueError
 
-    name, phone = args[0], args[1]
+    name, phone = args
 
     if name in contacts:
         return f"Contact '{name}' already exists."
@@ -55,10 +50,7 @@ def change_contact(args: List[str], contacts: ContactsBook) -> str:
     """
     Change the phone number for an existing contact.
     """
-    if len(args) < 2:
-        raise ValueError
-
-    name, phone = args[0], args[1]
+    name, phone = args
 
     if name not in contacts:
         raise KeyError
@@ -72,25 +64,14 @@ def show_phone(args: List[str], contacts: ContactsBook) -> str:
     """
     Show the phone number for a specified contact.
     """
-    if not args:
-        raise IndexError
-
-    name = args[0]
-
-    if name not in contacts:
-        raise KeyError
-
-    return f"{contacts[name]}"
+    return contacts[args[0]]
 
 
 @input_error
-def show_all(args: List[str], contacts: ContactsBook) -> str:
+def show_all(_: List[str], contacts: ContactsBook) -> str:
     """
     Show all saved contacts.
     """
-    if args:
-        raise IndexError
-
     if not contacts:
         return "No contacts saved."
 
@@ -98,13 +79,10 @@ def show_all(args: List[str], contacts: ContactsBook) -> str:
 
 
 @input_error
-def greet(args: List[str], _: ContactsBook) -> str:
+def greet(*args) -> str:
     """
     Respond to the hello command.
     """
-    if args:
-        raise IndexError
-
     return "How can I help you?"
 
 

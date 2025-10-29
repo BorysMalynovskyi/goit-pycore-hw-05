@@ -2,6 +2,7 @@
 from collections.abc import Callable, Iterable, Iterator
 from math import isclose
 
+
 def generator_numbers(text: str) -> Iterator[float]:
     """Yield every decimal number that is isolated by whitespace in *text*.
 

@@ -3,6 +3,7 @@ from typing import Dict, List, Tuple
 ContactsBook = Dict[str, str]
 ParsedCommand = Tuple[str, List[str]]
 
+
 def input_error(func):
     def inner(*args, **kwargs):
         try:
@@ -16,6 +17,7 @@ def input_error(func):
 
     return inner
 
+
 @input_error
 def parse_input(user_input: str) -> ParsedCommand:
     """
@@ -28,6 +30,7 @@ def parse_input(user_input: str) -> ParsedCommand:
     cmd = cmd.strip().lower()
 
     return cmd, args
+
 
 @input_error
 def add_contact(args: List[str], contacts: ContactsBook) -> str:
@@ -43,8 +46,9 @@ def add_contact(args: List[str], contacts: ContactsBook) -> str:
         return f"Contact '{name}' already exists."
 
     contacts[name] = phone
-    
+
     return "Contact added."
+
 
 @input_error
 def change_contact(args: List[str], contacts: ContactsBook) -> str:
@@ -62,6 +66,7 @@ def change_contact(args: List[str], contacts: ContactsBook) -> str:
     contacts[name] = phone
     return "Contact updated."
 
+
 @input_error
 def show_phone(args: List[str], contacts: ContactsBook) -> str:
     """
@@ -77,6 +82,7 @@ def show_phone(args: List[str], contacts: ContactsBook) -> str:
 
     return f"{contacts[name]}"
 
+
 @input_error
 def show_all(args: List[str], contacts: ContactsBook) -> str:
     """
@@ -90,6 +96,7 @@ def show_all(args: List[str], contacts: ContactsBook) -> str:
 
     return "\n".join(f"{name}: {phone}" for name, phone in contacts.items())
 
+
 @input_error
 def greet(args: List[str], _: ContactsBook) -> str:
     """
@@ -100,6 +107,7 @@ def greet(args: List[str], _: ContactsBook) -> str:
 
     return "How can I help you?"
 
+
 COMMANDS = {
     "add": add_contact,
     "change": change_contact,
@@ -107,6 +115,10 @@ COMMANDS = {
     "all": show_all,
     "hello": greet,
 }
+
+
+CLOSE_COMMANDS = ["close", "exit"]
+
 
 def main():
     """
@@ -124,7 +136,7 @@ def main():
 
         command, args = parse_input(user_input)
 
-        if command in ["close", "exit"]:
+        if command in CLOSE_COMMANDS:
             print("Good bye!")
             break
 
@@ -138,6 +150,7 @@ def main():
 
         if result:
             print(result)
+
 
 if __name__ == "__main__":
     main()

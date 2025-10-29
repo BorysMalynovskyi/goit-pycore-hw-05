@@ -7,6 +7,7 @@ from typing import List, Sequence
 LogEntry = dict[str, str]
 LEVEL_ORDER: Sequence[str] = ("INFO", "DEBUG", "ERROR", "WARNING")
 
+
 def parse_log_line(line: str) -> LogEntry:
     """Parse a single log line into its components.
 
@@ -20,13 +21,14 @@ def parse_log_line(line: str) -> LogEntry:
         raise ValueError("Log line has an unexpected format")
 
     date_value, time_value, level, message = parts
-    
+
     return {
         "date": date_value,
         "time": time_value,
         "level": level.upper(),
         "message": message.strip(),
     }
+
 
 def load_logs(file_path: str | Path) -> List[LogEntry]:
     """Load and parse all log entries from *file_path*.
@@ -47,16 +49,23 @@ def load_logs(file_path: str | Path) -> List[LogEntry]:
             try:
                 logs.append(parse_log_line(stripped))
             except ValueError as value_error:
-                print(f"Skipping malformed line {line_number}: {value_error}", file=sys.stderr)
+                print(
+                    f"Skipping malformed line {line_number}: {value_error}",
+                    file=sys.stderr,
+                )
 
     return logs
 
-def filter_logs_by_level(logs: Sequence[LogEntry], level: str) -> List[LogEntry]:
+
+def filter_logs_by_level(
+    logs: Sequence[LogEntry],
+    level: str,
+) -> List[LogEntry]:
     """Return all log entries that match *level* (case-insensitive)."""
 
     normalized = level.upper()
 
-    return list(filter(lambda entry: entry["level"] == normalized, logs))
+    return [entry for entry in logs if entry["level"] == normalized]
 
 
 def count_logs_by_level(logs: Sequence[LogEntry]) -> dict[str, int]:
@@ -72,42 +81,59 @@ def display_log_counts(counts: dict[str, int]) -> None:
 
     header_level = "Log level"
     header_count = "Count"
-    level_width = max(len(header_level), max(len(level) for level in LEVEL_ORDER))
-    count_width = max(len(header_count), max(len(str(value)) for value in counts.values()))
+    level_width = max(
+        len(header_level),
+        max(len(level) for level in LEVEL_ORDER),
+    )
+    count_width = max(
+        len(header_count),
+        max(len(str(value)) for value in counts.values()),
+    )
 
     print(f"{header_level.ljust(level_width)} | {header_count}")
 
-    print(f"{'-' * level_width}-|{'-' * count_width}")
+    separator = f"{'-' * level_width}-|{'-' * count_width}"
+    print(separator)
 
     for level in LEVEL_ORDER:
-        print(f"{level.ljust(level_width)} | {str(counts.get(level, 0)).ljust(count_width)}")
+        level_label = level.ljust(level_width)
+        count_label = str(counts.get(level, 0)).ljust(count_width)
+        print(f"{level_label} | {count_label}")
 
 
 def main(argv: Sequence[str] | None = None) -> int:
     """Entry point for the command line interface."""
 
-    argumentParser = argparse.ArgumentParser(
-        description="Summarise log levels and optionally display detailed entries.",
+    parser = argparse.ArgumentParser(
+        description=(
+            "Summarise log levels and optionally display detailed entries."
+        ),
     )
 
-    argumentParser.add_argument(
+    parser.add_argument(
         "logfile",
         type=Path,
         help="Path to the log file that should be analysed.",
     )
 
-    argumentParser.add_argument(
+    parser.add_argument(
         "level",
         nargs="?",
-        help="Optional log level to display detailed entries for (e.g. error).",
+        help=(
+            "Optional log level to display detailed entries for "
+            "(e.g. error)."
+        ),
     )
 
-    args = argumentParser.parse_args(argv)
+    args = parser.parse_args(argv)
 
     try:
         logs = load_logs(args.logfile)
     except OSError as os_error:
-        print(f"Unable to read log file '{args.logfile}': {os_error}", file=sys.stderr)
+        print(
+            f"Unable to read log file '{args.logfile}': {os_error}",
+            file=sys.stderr,
+        )
         return 1
 
     counts = count_logs_by_level(logs)
@@ -120,11 +146,15 @@ def main(argv: Sequence[str] | None = None) -> int:
         print(f"\n'{level}' log details:")
         if matching_logs:
             for entry in matching_logs:
-                print(f"{entry['date']} {entry['time']} - {entry['message']}")
+                date = entry["date"]
+                timestamp = entry["time"]
+                message = entry["message"]
+                print(f"{date} {timestamp} - {message}")
         else:
             print("No entries with such log level.")
 
     return 0
 
+
 if __name__ == "__main__":
-    main()
+    sys.exit(main())
